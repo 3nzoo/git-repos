@@ -1,0 +1,22 @@
+.header {
+  padding: 2em;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  font-size: 1em;
+}
+
+.input_field {
+  background-color: #fafafa;
+  border: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  transition: 0.3s box-shadow;
+  height: 25px;
+  width: auto;
+  font-size: 1em;
+  padding: 12px;
+}
+
+.input_field:focus::-webkit-input-placeholder {
+  color: transparent;
+}
