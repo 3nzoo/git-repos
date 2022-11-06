@@ -44,6 +44,7 @@ type LoadMoreProps = {
 const LoadMore: React.FC<LoadMoreProps> = ({ data, limit }: LoadMoreProps) => {
   const [page, setPage] = useState(0);
 
+  //? add new Page to load More
   const handleClick = async () => {
     const addPage = page + 1;
     await setPage(addPage);

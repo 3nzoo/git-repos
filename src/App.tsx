@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import CssBaseline from '@mui/material/CssBaseline';
 import './styles.css';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -11,33 +10,32 @@ import { tableType } from './components/constants';
 import PaginationComponent from './components/Pagination';
 import LoadMore from './components/Loadmore';
 import UnliScroll from './components/Unliscroll';
-import { minWidth } from '@mui/system';
 import { IdataRepos } from './components/interfaces/app';
 import SelectLanguage from './components/selectLanguage';
 
-//! Display a list of repositories ordered by star count to the user.
-//! The user should be able to filter the list by programming language
-//! The user should be able to access additional pages using a pagination strategy of your choice (e.g next/prev links, load more link, infinite scroll).
-//! Feel free to use any third party libraries you think are appropriate.
-
-// TODO 0. created function in buttons - DONE!!
-//TODO 1. add axios get user data - DONE!!
-//TODO 2. add state currentPage if data shown has reached limit
+// TODO 1. created function in buttons - DONE!!
+// TODO 2. add axios get user data - DONE!!
 // TODO 3. Language category in a drop down menu (replace the current input box) - DONE!!
-// TODO 4. create Pagination table component
-// TODO 5. create Loadmore table component
+// TODO 4. create Pagination table component - Done!!
+// TODO 5. create Loadmore table component - Done!!
 // TODO 6. create Unliscroll table component
+// TODO 7. add state currentPage if data shown has reached limit
 
 export const App = () => {
   const [gitUser, setGitUser] = useState('');
   const [dataRepos, setDataRepos] = useState([]);
-  const effectRan = useRef(false);
   const [loading, setLoading] = useState(false);
   const [progLanguages, setProgLanguages] = useState([]);
   const [selectLanguage, setSelectLanguage] = useState('');
   const [sortedData, setSortedData] = useState([]);
-  const [currentTable, setCurrentTable] = useState(tableType.LOAD);
+  const [currentTable, setCurrentTable] = useState(tableType.PAGINATION);
+
+  //? avoid useEffect double render call
+  const effectRan = useRef(false);
+
+  //? preparation for loading more response if user Repo is > 100
   const [queryPage, setQueryPage] = useState(1);
+
   const handleChange = (e: string) => {
     setGitUser(e);
   };
@@ -47,13 +45,14 @@ export const App = () => {
   };
 
   useEffect(() => {
+    //! AbortController = canceling request the fetch API way
     const controller = new AbortController();
+
     if (gitUser.length && effectRan.current === true) {
       setLoading(true);
       const getUserRepos = async () => {
         try {
-          // TODO axios get the repo from the user input (useEffect) DONE
-          //! GITHUB Limit response is 100
+          //! GITHUB Limit response is 100 (didn't use page query as there is no api sort response for stars rate)
           const res = await axios.get(
             `https://api.github.com/users/${gitUser}/repos??page=${queryPage}&per_page=100`,
             {
@@ -61,6 +60,7 @@ export const App = () => {
             }
           );
 
+          //! Get only repo Name, Language and Star Count
           const filterData = await res.data.map(
             (item: IdataRepos, index: number) => {
               return {
@@ -72,21 +72,24 @@ export const App = () => {
             }
           );
 
-          // TODO Data must be descending order by rating
+          // TODO Data must be descending order by star rating
           const sorted = await filterData.sort(
             (a: IdataRepos, b: IdataRepos) => {
               return b.stargazers_count - a.stargazers_count;
             }
           );
 
+          //! base of language filtering feature
           setSortedData(sorted);
+
+          //! will be overwritten by language filtering and used for table components
           setDataRepos(sorted);
 
           const currentLanguages = res.data.map((val: IdataRepos) => {
             return val.language;
           });
 
-          // TODO put language category in a drop down menu to filter data results
+          // TODO put language category in a drop down select menu to filter data results
           setProgLanguages(
             currentLanguages.filter(
               (val: string, index: number, arrLanguage: string[]) =>
@@ -108,9 +111,9 @@ export const App = () => {
     };
   }, [gitUser]);
 
+  // TODO filter language result for prog language category DONE
   useEffect(() => {
     if (selectLanguage.length && effectRan.current === true) {
-      // TODO FEATURE filter language result for prog language category DONE
       setDataRepos(
         sortedData.filter((item: IdataRepos) => item.language == selectLanguage)
       );
@@ -120,12 +123,6 @@ export const App = () => {
       effectRan.current = true;
     };
   }, [setSelectLanguage, selectLanguage]);
-
-  // if (dataRepos.length) {
-  //   console.log(dataRepos);
-  //   console.log(progLanguages);
-  //   console.log(selectLanguage);
-  // }
 
   return (
     <React.Fragment>
