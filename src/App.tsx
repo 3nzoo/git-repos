@@ -23,7 +23,7 @@ import SelectLanguage from './components/selectLanguage';
 // TODO 0. created function in buttons - DONE!!
 //TODO 1. add axios get user data - DONE!!
 //TODO 2. add state currentPage if data shown has reached limit
-// TODO 3. Language category in a drop down menu (replace the current input box)
+// TODO 3. Language category in a drop down menu (replace the current input box) - DONE!!
 // TODO 4. create Pagination table component
 // TODO 5. create Loadmore table component
 // TODO 6. create Unliscroll table component
@@ -37,8 +37,8 @@ export const App = () => {
   const [selectLanguage, setSelectLanguage] = useState('');
   const [sortedData, setSortedData] = useState([]);
   const [currentTable, setCurrentTable] = useState(tableType.PAGINATION);
-  const [currentPage, setCurrentPage] = useState(1);
-
+  const [queryPage, setQueryPage] = useState(1);
+  const [page, setPage] = useState(1);
   const handleChange = (e: string) => {
     setGitUser(e);
   };
@@ -55,20 +55,24 @@ export const App = () => {
       const getUserRepos = async () => {
         try {
           // TODO axios get the repo from the user input (useEffect) DONE
+          //! GITHUB Limit response is 100
           const res = await axios.get(
-            `https://api.github.com/users/${gitUser}/repos??page=${currentPage}&per_page=100`,
+            `https://api.github.com/users/${gitUser}/repos??page=${queryPage}&per_page=200`,
             {
               signal: controller.signal,
             }
           );
 
-          const filterData = await res.data.map((item: IdataRepos) => {
-            return {
-              name: item.name,
-              language: item.language,
-              stargazers_count: item.stargazers_count,
-            };
-          });
+          const filterData = await res.data.map(
+            (item: IdataRepos, index: number) => {
+              return {
+                id: index,
+                name: item.name,
+                language: item.language,
+                stargazers_count: item.stargazers_count,
+              };
+            }
+          );
 
           // TODO Data must be descending order by rating
           const sorted = await filterData.sort(
@@ -119,11 +123,11 @@ export const App = () => {
     };
   }, [setSelectLanguage, selectLanguage]);
 
-  if (dataRepos.length) {
-    console.log(dataRepos);
-    console.log(progLanguages);
-    console.log(selectLanguage);
-  }
+  // if (dataRepos.length) {
+  //   console.log(dataRepos);
+  //   console.log(progLanguages);
+  //   console.log(selectLanguage);
+  // }
 
   return (
     <React.Fragment>
@@ -187,16 +191,29 @@ export const App = () => {
               </Button>
             </Stack>
           </div>
-          <Stack
-            justifyContent="center"
-            alignItems="center"
-            direction="row"
-            style={{ width: '100%' }}
-          >
-            {currentTable === tableType.PAGINATION && <PaginationComponent />}
-            {currentTable === tableType.LOAD && <LoadMore />}
-            {currentTable === tableType.UNLISCROLL && <UnliScroll />}
-          </Stack>
+          {loading ? (
+            <Stack
+              justifyContent="center"
+              alignItems="center"
+              direction="row"
+              style={{ width: '100%' }}
+            >
+              Loading...
+            </Stack>
+          ) : (
+            <Stack
+              justifyContent="center"
+              alignItems="center"
+              direction="row"
+              style={{ width: '100%' }}
+            >
+              {currentTable === tableType.PAGINATION && (
+                <PaginationComponent data={dataRepos} limit={8} />
+              )}
+              {currentTable === tableType.LOAD && <LoadMore />}
+              {currentTable === tableType.UNLISCROLL && <UnliScroll />}
+            </Stack>
+          )}
         </Box>
       </Container>
     </React.Fragment>
