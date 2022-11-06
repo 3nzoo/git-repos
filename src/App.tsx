@@ -36,9 +36,8 @@ export const App = () => {
   const [progLanguages, setProgLanguages] = useState([]);
   const [selectLanguage, setSelectLanguage] = useState('');
   const [sortedData, setSortedData] = useState([]);
-  const [currentTable, setCurrentTable] = useState(tableType.PAGINATION);
+  const [currentTable, setCurrentTable] = useState(tableType.LOAD);
   const [queryPage, setQueryPage] = useState(1);
-  const [page, setPage] = useState(1);
   const handleChange = (e: string) => {
     setGitUser(e);
   };
@@ -49,7 +48,6 @@ export const App = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-
     if (gitUser.length && effectRan.current === true) {
       setLoading(true);
       const getUserRepos = async () => {
@@ -57,7 +55,7 @@ export const App = () => {
           // TODO axios get the repo from the user input (useEffect) DONE
           //! GITHUB Limit response is 100
           const res = await axios.get(
-            `https://api.github.com/users/${gitUser}/repos??page=${queryPage}&per_page=200`,
+            `https://api.github.com/users/${gitUser}/repos??page=${queryPage}&per_page=100`,
             {
               signal: controller.signal,
             }
@@ -183,6 +181,7 @@ export const App = () => {
               <Button
                 style={{ height: 'auto', minHeight: '50px', minWidth: '100px' }}
                 variant="contained"
+                disabled
                 onClick={() => {
                   setCurrentTable(tableType.UNLISCROLL);
                 }}
@@ -208,9 +207,11 @@ export const App = () => {
               style={{ width: '100%' }}
             >
               {currentTable === tableType.PAGINATION && (
-                <PaginationComponent data={dataRepos} limit={8} />
+                <PaginationComponent data={dataRepos} limit={10} />
               )}
-              {currentTable === tableType.LOAD && <LoadMore />}
+              {currentTable === tableType.LOAD && (
+                <LoadMore data={dataRepos} limit={5} />
+              )}
               {currentTable === tableType.UNLISCROLL && <UnliScroll />}
             </Stack>
           )}
