@@ -18,7 +18,7 @@ import SelectLanguage from './components/selectLanguage';
 // TODO 3. Language category in a drop down menu (replace the current input box) - DONE!!
 // TODO 4. create Pagination table component - Done!!
 // TODO 5. create Loadmore table component - Done!!
-// TODO 6. create Unliscroll table component
+// TODO 6. create Unliscroll table component - Done!!
 // TODO 7. add state currentPage if data shown has reached limit
 
 export const App = () => {
@@ -50,6 +50,7 @@ export const App = () => {
 
     if (gitUser.length && effectRan.current === true) {
       setLoading(true);
+      setSelectLanguage('');
       const getUserRepos = async () => {
         try {
           //! GITHUB Limit response is 100 (didn't use page query as there is no api sort response for stars rate)
@@ -178,7 +179,6 @@ export const App = () => {
               <Button
                 style={{ height: 'auto', minHeight: '50px', minWidth: '100px' }}
                 variant="contained"
-                disabled
                 onClick={() => {
                   setCurrentTable(tableType.UNLISCROLL);
                 }}
@@ -209,7 +209,9 @@ export const App = () => {
               {currentTable === tableType.LOAD && (
                 <LoadMore data={dataRepos} limit={5} />
               )}
-              {currentTable === tableType.UNLISCROLL && <UnliScroll />}
+              {currentTable === tableType.UNLISCROLL && (
+                <UnliScroll data={dataRepos} limit={10} />
+              )}
             </Stack>
           )}
         </Box>
